@@ -1,7 +1,14 @@
 import pygame
+import sys
 import random
 
 pygame.init()
+
+global startGame
+global modes
+
+startGame = False
+modes = False
 
 
 class window:
@@ -13,7 +20,7 @@ class window:
         self.bg = pygame.image.load(self.pathImatge + "lienzo.jpg")
 
         self.relog = pygame.time.Clock()
-        self.clock = self.relog.tick(20)
+        self.clock = self.relog.tick(60)
 
     def startFramework(self): 
         self.window.fill((100, 100, 100))
@@ -22,6 +29,8 @@ class window:
         pygame.display.flip()
 
     def endFramework(self):
+        global startGame
+
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -29,7 +38,7 @@ class window:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    return True
+                    startGame = False
 
     def draw_bg(self):
         self.window.blit(self.bg, (0, 0))
@@ -165,7 +174,6 @@ class personatge:
         else:
             self.y = 1 #1 com a mínim del lienzo.
 
-
         self.personatge.rect.x = self.x #IMPORTANT
         self.personatge.rect.y = self.y #IMPORTANT
 
@@ -226,19 +234,160 @@ class collide:
         else:
             print("noo")
 
+class menu:
+    def __init__(self, window):
+        self.pathImatge = "imatges/"
+        self.window = window
+        self.menu = pygame.image.load(self.pathImatge + "menu.jpg")
+        self.cotxe = pygame.image.load(self.pathImatge + "coche_animadoD.png")
+        self.anchuraCotxe = self.cotxe.get_width()
+        self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 200
+        self.x, self.y = 0, 0
+
+        self.opcio = 0
+
+        self.exit = False
+
+    def opcions(self):
+        global startGame 
+        global modes
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN: 
+                if event.key == pygame.K_DOWN:
+                    self.opcio += 1
+
+                elif event.key == pygame.K_UP:
+                    self.opcio -= 1
+
+
+
+                elif event.key == pygame.K_RETURN:
+                    if self.opcio == 2:
+                        sys.exit() #IMPORTANT REVISAAAAAAR!
+
+                    if self.opcio == 0:
+                        startGame = True
+
+                    if self.opcio == 1:
+                        modes = True
+
+
+    def draw(self):
+        self.window.blit(self.menu, (self.x, self.y))
+
+        if self.opcio == 1:
+            self.xCotxe = 650 - self.anchuraCotxe
+            self.yCotxe = 400
+
+            self.exit = False
+
+        elif self.opcio == 2:
+            self.xCotxe = 750 - self.anchuraCotxe
+            self.yCotxe = 600
+
+            self.exit = True
+
+        elif self.opcio == 0:
+            self.xCotxe = 725 - self.anchuraCotxe
+            self.yCotxe = 200
+
+            self.exit = False
+
+
+        if self.opcio > 2:
+            self.opcio = 0
+
+        elif self.opcio < 0:
+            self.opcio = 0
+
+        self.window.blit(self.cotxe, (self.xCotxe, self.yCotxe))
+
+
+class modes_frame:
+    def __init__(self, window):
+        self.pathImatge = "imatges/"
+        self.window = window
+        self.modes = pygame.image.load(self.pathImatge + "modes.jpg")
+        self.cotxe = pygame.image.load(self.pathImatge + "coche_animadoD.png")
+        self.anchuraCotxe = self.cotxe.get_width()
+
+        self.xModes, self.yModes = 0, 0
+        self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 200
+
+        self.opcio = 0
+
+
+    def draw(self):
+        self.window.blit(self.modes, (self.xModes, self.yModes))
+
+
+        if self.opcio == 0:
+            self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 200
+
+        elif self.opcio == 1:
+            self.xCotxe, self.yCotxe = 500 - self.anchuraCotxe, 400
+
+        elif self.opcio == 2:
+            self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 575
+
+        if self.opcio > 2:
+            self.opcio = 0
+
+        elif self.opcio < 0:
+            self.opcio = 0
+
+        self.window.blit(self.cotxe, (self.xCotxe, self.yCotxe))
+
+    def opcions(self):
+        global modes
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN: 
+                if event.key == pygame.K_DOWN:
+                    self.opcio += 1
+
+                elif event.key == pygame.K_UP:
+                    self.opcio -= 1
+
+
+                elif event.key == pygame.K_RETURN:
+                    if self.opcio == 2:
+                        modes = False
+
+
 
 Window = window()
 Personatge = personatge(Window.window, Window.anchura, Window.altura)
 Cotxe = cotxe(Personatge.personatge, Window.anchura, Window.altura, Window.window)
 Collisio = collide(Personatge.personatge, Cotxe.cotxes)
-
+Menu = menu(Window.window)
+Modes = modes_frame(Window.window)
 
 while not Window.endFramework():
     Window.startFramework()
-    Window.draw_bg()
-    Cotxe.draw()
-    Personatge.draw()
-    Personatge.movement()
-    Cotxe.movement_cotxe()
-    Collisio.collide()
+    if startGame and not modes:
+        Window.draw_bg()
+        Cotxe.draw()
+        Personatge.draw()
+        Personatge.movement()
+        Cotxe.movement_cotxe()
+        Collisio.collide()
+
+    else:
+        Menu.draw()
+        Menu.opcions()
+
+    if modes:
+        Modes.draw()
+        Modes.opcions()
+    
+    
+    
     Window.updateFramework()
+
+
+
+
+
+    #FER QUE TORNI A COMENÇAR DES DE 0.
