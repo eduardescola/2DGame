@@ -7,6 +7,12 @@ pygame.init()
 global startGame
 global modes
 
+global simp
+global warrior
+
+simp = True
+warrior = False
+
 startGame = False
 modes = False
 
@@ -20,7 +26,7 @@ class window:
         self.bg = pygame.image.load(self.pathImatge + "lienzo.jpg")
 
         self.relog = pygame.time.Clock()
-        self.clock = self.relog.tick(60)
+        self.clock = self.relog.tick(30)
 
     def startFramework(self): 
         self.window.fill((100, 100, 100))
@@ -192,6 +198,10 @@ class cotxe:
 
         self.cotxes = pygame.sprite.Group()
 
+        self.simp = 2
+        self.warrior = 5
+        self.velocitat = 2
+
         self.cotxeSprite = pygame.sprite.Sprite()
         cotxeImatge = pygame.image.load(self.pathImatge + "coche_animadoD.png")
         self.cotxeSprite.image = cotxeImatge
@@ -210,12 +220,22 @@ class cotxe:
         self.cotxes.add(self.cotxeSprite)
 
     def movement_cotxe(self):
-        self.cotxeSprite.rect.x += 2
+        global warrior
+        global simp
+
+        if warrior:
+            self.velocitat = self.warrior
+            self.cotxeSprite.rect.x += self.velocitat
+
+        else:
+            self.velocitat = self.simp
+            self.cotxeSprite.rect.x += self.velocitat
 
         if self.cotxeSprite.rect.x > self.anchura:
             self.cotxeSprite.rect.y = random.choice(self.yCotxeLlista)
             self.cotxeSprite.rect.x = -self.cotxeAnchura
 
+        print(self.velocitat)
 
     def draw(self):
         self.cotxes.draw(self.window)
@@ -315,18 +335,29 @@ class modes_frame:
         self.xModes, self.yModes = 0, 0
         self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 200
 
+
+        self.font = pygame.font.SysFont("arcades", 120)
+
+        self.xFont, self.yFont = 650, 75
+
+
         self.opcio = 0
+
+        self.simp = True
+        self.warrior = False
 
 
     def draw(self):
-        self.window.blit(self.modes, (self.xModes, self.yModes))
 
+        self.window.blit(self.modes, (self.xModes, self.yModes))
 
         if self.opcio == 0:
             self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 200
 
+
         elif self.opcio == 1:
             self.xCotxe, self.yCotxe = 500 - self.anchuraCotxe, 400
+            
 
         elif self.opcio == 2:
             self.xCotxe, self.yCotxe = 750 - self.anchuraCotxe, 575
@@ -337,10 +368,22 @@ class modes_frame:
         elif self.opcio < 0:
             self.opcio = 0
 
+        if warrior:
+            title = "WARRIOR"
+            img = self.font.render(title, True, (64, 255, 0))
+            self.window.blit(img, (self.xFont, self.yFont))
+
+        elif simp:
+            title = "SIMP"
+            img = self.font.render(title, True, (64, 255, 0))
+            self.window.blit(img, (self.xFont, self.yFont))
+
         self.window.blit(self.cotxe, (self.xCotxe, self.yCotxe))
 
     def opcions(self):
         global modes
+        global warrior
+        global simp
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN: 
@@ -355,6 +398,15 @@ class modes_frame:
                     if self.opcio == 2:
                         modes = False
 
+                    elif self.opcio == 1:
+                        warrior = True
+                        simp = False
+
+                    elif self.opcio == 0:
+                        simp = True
+                        warrior = False
+
+                    
 
 
 Window = window()
@@ -391,3 +443,4 @@ while not Window.endFramework():
 
 
     #FER QUE TORNI A COMENÇAR DES DE 0.
+    #LAG EN MENU
