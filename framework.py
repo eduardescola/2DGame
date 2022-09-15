@@ -1,3 +1,4 @@
+from tkinter import W
 import pygame
 import sys
 import random
@@ -108,8 +109,14 @@ class personatge:
 
         self.count = 0
 
-    def draw(self):
+        self.nivells = 0
 
+        self.font = pygame.font.SysFont("Arial", 50)
+        self.color = (70, 255, 0)
+        
+        self.out = False
+
+    def draw(self):
         if self.down:
             self.window.blit(self.personatgeDOWN[self.count], (self.x, self.y))
             self.count += 1
@@ -138,6 +145,15 @@ class personatge:
 
         else:
             self.window.blit(self.personatgeImatge, (self.x, self.y))
+
+
+        if self.out:
+            self.nivells += 1
+            self.out = False
+
+        msg = "#Nivells:  " + str(self.nivells)
+        imatge = self.font.render(msg, True, (self.color))
+        self.window.blit(imatge, (self.anchura - 200, self.altura - 150))
 
 
     def movement(self):
@@ -176,6 +192,8 @@ class personatge:
 
             if self.y > self.altura - 100:
                 self.y = 1
+                self.out = True
+
 
         else:
             self.y = 1 #1 com a mínim del lienzo.
@@ -183,6 +201,10 @@ class personatge:
         self.personatge.rect.x = self.x #IMPORTANT
         self.personatge.rect.y = self.y #IMPORTANT
 
+
+    def teleport(self):
+        self.x = self.anchura/2 - self.personatgeAnchura
+        self.y = 0
 
 class cotxe:
     def __init__(self, personatge, anchura_ventana, altura_ventana, window):
@@ -235,24 +257,46 @@ class cotxe:
             self.cotxeSprite.rect.y = random.choice(self.yCotxeLlista)
             self.cotxeSprite.rect.x = -self.cotxeAnchura
 
-        print(self.velocitat)
+        #print(self.velocitat)
 
     def draw(self):
         self.cotxes.draw(self.window)
 
 
 class collide:
-    def __init__(self, personatge, cotxes):
-        self.personatge = personatge
+    def __init__(self, personatge1, cotxes, window, anchura, altura):
+        self.personatge = personatge1
         self.cotxes = cotxes
+
+        self.window = window
+        self.anchura = anchura
+        self.altura = altura
+
+        self.intents = 0
+        self.realNum = 0
+        self.maxRange = 130
+
+        self.font = pygame.font.SysFont("Arial", 50)
+        self.color = (70, 255, 0)
+
+
+        self.tp = personatge(self.window, self.anchura, self.altura).teleport() #CHECK!!
 
 
     def collide(self):
         if pygame.sprite.spritecollideany(self.personatge, self.cotxes):
-            print("eeeee")
+            #modificar x, y del personatje
+            self.intents += 1
 
-        else:
-            print("noo")
+            if self.intents > self.maxRange: #
+                self.realNum += 1
+                self.intents = 0
+
+        msg = "#Morts: " + str(self.realNum)
+        imatge = self.font.render(msg, True, (self.color))
+
+        self.window.blit(imatge, (0, self.altura - 150))
+
 
 class menu:
     def __init__(self, window):
@@ -348,7 +392,6 @@ class modes_frame:
 
 
     def draw(self):
-
         self.window.blit(self.modes, (self.xModes, self.yModes))
 
         if self.opcio == 0:
@@ -412,7 +455,7 @@ class modes_frame:
 Window = window()
 Personatge = personatge(Window.window, Window.anchura, Window.altura)
 Cotxe = cotxe(Personatge.personatge, Window.anchura, Window.altura, Window.window)
-Collisio = collide(Personatge.personatge, Cotxe.cotxes)
+Collisio = collide(Personatge.personatge, Cotxe.cotxes, Window.window, Window.anchura, Window.altura)
 Menu = menu(Window.window)
 Modes = modes_frame(Window.window)
 
